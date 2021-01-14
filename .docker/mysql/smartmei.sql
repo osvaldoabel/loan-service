@@ -2,6 +2,7 @@ CREATE DATABASE IF NOT EXISTS smartmei;
 
 use smartmei;
 
+-- Users Table
 CREATE TABLE IF NOT EXISTS users (
     id       varchar(40) NOT NULL PRIMARY KEY,
     name     VARCHAR(120) NOT NULL ,
@@ -12,12 +13,14 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=INNODB;
 
+-- Books table
 CREATE TABLE IF NOT EXISTS books (
     id       varchar(80) NOT NULL PRIMARY KEY,
     title    VARCHAR(120) NOT NULL ,
-    user_id  VARCHAR(100) DEFAULT NULL,
-    pages   VARCHAR(8)   DEFAULT NULL,
+    user_id  VARCHAR(100) DEFAULT NULL foreign KEY,
+    pages    INTEGER(8)   DEFAULT 0,
     status   VARCHAR(8)   DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=INNODB;
