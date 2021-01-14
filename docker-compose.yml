@@ -1,0 +1,25 @@
+version: '3'
+
+services: 
+  smartmei.web:
+    container_name: 'smartmei.app'
+    entrypoint: dockerize -template .docker/app/.env:.env ./.docker/app/entrypoint.sh
+
+    build: .docker/app/
+    volumes:
+      - ./:/go/workspace/
+    ports:
+      - "9900:80"
+
+  smartmei.db:
+    container_name: 'smartmei.db'
+    build: ./.docker/mysql
+    volumes:
+      - .docker/mysql/dbdata/:/var/lib/mysql
+
+    environment:
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=smartmei
+    ports:
+      - "3399:3306"
