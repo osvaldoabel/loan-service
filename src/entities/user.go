@@ -1,22 +1,26 @@
 package entities
 
 import (
-	"regexp"
+	"fmt"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/asaskevich/govalidator"
 )
+
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
+}
 
 //User  - related to user data.
 type User struct {
-	ID        string
-	Name      string
-	Email     string
-	Password  string
-	Status    string
-	Birthday  time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `valid:"uuid" gorm:"type:uuid;primary_key"`
+	Name      string    `valid:"notnull"`
+	Email     string    `valid:"notnull"`
+	Password  string    `valid:"notnull"`
+	Status    string    `valid:"notnull"`
+	Birthday  time.Time `valid:"-"`
+	CreatedAt time.Time `valid:"-"`
+	UpdatedAt time.Time `valid:"-"`
 }
 
 func CreateUser(name string, email string, password string, status string, birthday time.Time) (*User, error) {
@@ -30,15 +34,18 @@ func CreateUser(name string, email string, password string, status string, birth
 		ID:        GenerateNewUuID(),
 		Name:      name,
 		Email:     email,
+		Password:  password,
 		Birthday:  birthday,
 		Status:    status,
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	u.Password = pass
 
 	err = u.Validate()
 	if err != nil {
+		fmt.Println(err)
 		return nil, ErrInvalidItem
 	}
 
@@ -46,8 +53,11 @@ func CreateUser(name string, email string, password string, status string, birth
 }
 
 func (u *User) Validate() error {
-	if u.Name == "" || u.Email == "" || u.Password == "" {
-		return ErrInvalidItem
+
+	_, err := govalidator.ValidateStruct(u)
+
+	if err != nil {
+		return err
 	}
 
 	if !IsValidEmail(u.Email) {
@@ -55,19 +65,4 @@ func (u *User) Validate() error {
 	}
 
 	return nil
-}
-
-// Encrypt - Encript password
-func Encrypt(pass string) (string, error) {
-	encrypted, err := bcrypt.GenerateFromPassword([]byte(pass), 10)
-	if err != nil {
-		return "", err
-	}
-	return string(encrypted), nil
-}
-
-// IsValidEmail - Verify if email is valid or not.
-func IsValidEmail(email string) bool {
-	pattern := regexp.MustCompile(`^(\w|\.)+\@(\w)+(.(\w)+){1,2}$`)
-	return pattern.MatchString(email)
 }
